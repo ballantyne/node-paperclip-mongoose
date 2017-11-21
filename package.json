@@ -1,0 +1,23 @@
+{
+  "name": "node-paperclip-mongoose",
+  "version": "1.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ballantyne/node-paperclip.git"
+  },
+  "author": "Scott Ballantyne",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ballantyne/node-paperclip/issues"
+  },
+  "homepage": "https://github.com/ballantyne/node-paperclip#readme",
+  "dependencies": {
+    "node-paperclip": "^1.2.4",
+    "underscore": "^1.8.3"
+  }
+}

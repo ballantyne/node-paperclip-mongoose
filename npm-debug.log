@@ -1,0 +1,107 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node', '/usr/local/bin/npm', 'publish' ]
+2 info using npm@3.10.10
+3 info using node@v6.11.4
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec Result {
+7 silly cache add   raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   escapedName: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: '/home/scott/Software/node-paperclip-mongoose',
+7 silly cache add   type: 'directory' }
+8 verbose addLocalDirectory /home/scott/.npm/node-paperclip-mongoose/1.0.1/package.tgz not in flight; packing
+9 verbose correctMkdir /home/scott/.npm correctMkdir not in flight; initializing
+10 info lifecycle node-paperclip-mongoose@1.0.1~prepublish: node-paperclip-mongoose@1.0.1
+11 silly lifecycle node-paperclip-mongoose@1.0.1~prepublish: no script for prepublish, continuing
+12 verbose tar pack [ '/home/scott/.npm/node-paperclip-mongoose/1.0.1/package.tgz',
+12 verbose tar pack   '/home/scott/Software/node-paperclip-mongoose' ]
+13 verbose tarball /home/scott/.npm/node-paperclip-mongoose/1.0.1/package.tgz
+14 verbose folder /home/scott/Software/node-paperclip-mongoose
+15 verbose addLocalTarball adding from inside cache /home/scott/.npm/node-paperclip-mongoose/1.0.1/package.tgz
+16 verbose correctMkdir /home/scott/.npm correctMkdir not in flight; initializing
+17 silly cache afterAdd node-paperclip-mongoose@1.0.1
+18 verbose afterAdd /home/scott/.npm/node-paperclip-mongoose/1.0.1/package/package.json not in flight; writing
+19 verbose correctMkdir /home/scott/.npm correctMkdir not in flight; initializing
+20 verbose afterAdd /home/scott/.npm/node-paperclip-mongoose/1.0.1/package/package.json written
+21 silly publish { name: 'node-paperclip-mongoose',
+21 silly publish   version: '1.0.1',
+21 silly publish   description: 'node-paperclip-mongoose =========',
+21 silly publish   main: 'index.js',
+21 silly publish   scripts: { test: 'mocha' },
+21 silly publish   repository:
+21 silly publish    { type: 'git',
+21 silly publish      url: 'git://github.com/ballantyne/node-paperclip.git' },
+21 silly publish   author: { name: 'Scott Ballantyne' },
+21 silly publish   license: 'MIT',
+21 silly publish   bugs: { url: 'https://github.com/ballantyne/node-paperclip/issues' },
+21 silly publish   homepage: 'https://github.com/ballantyne/node-paperclip#readme',
+21 silly publish   dependencies: { 'node-paperclip': '^1.2.4', underscore: '^1.8.3' },
+21 silly publish   readme: 'node-paperclip-mongoose\n=========\n\nThis is going to be the module that people need if they use mongoose.  It won\'t work until the next version of node-paperclip is released, but I am publishing it in order to test it to ensure that when I do publish it it will work as expected.  The configuration has changed and also the form that you would use to upload a document has also changed.\n\nThis is a npm module that is meant to work like the Paperclip gem from Ruby on Rails. It currently only works with mongoose, but is set up to be easily extended to work with other databases.  Also, it works with AWS s3 and the file system at the present time, but it should be easy to add other storage methods in the future. \n\nTo install \n\n```bash\nnpm install node-paperclip --save\nnpm install node-paperclip-mongoose --save\n```\n\nHere is an example of a model that uses the mongoose plugin.\n\n```javascript\nconst mongoose     = require(\'mongoose\');\nconst Schema       = mongoose.Schema;\nconst Paperclip    = require(\'node-paperclip\');\n\nconst ProfileImage = new Schema({\n  user_id: { type: Schema.Types.ObjectId, ref: \'User\' },\n  username: String\n});\n\nProfileImage.plugin(Paperclip.plugins.load(\'mongoose\'), {\n  profile_image: {\n    avatar: { \n      styles: [\n        { original: true },\n        { tiny:     { width: 50,  height: 50,  modifier: \'#\' } },\n        { thumb:    { width: 100, height: 100, modifier: \'#\' } },\n        { profile:  { width: 200, height: 200, modifier: \'#\' } }\n      ],\n      prefix:      \'{{plural}}/{{document.username}}\',\n      name_format: \'{{style}}.{{extension}}\'\n    }\n  }\n})\n\nmodule.exports     = mongoose.model(\'ProfileImage\', ProfileImage);\n```\n\nHere is an example of an express route that uses that ProfileImage model.\n```javascript\n\nvar express = require(\'express\');\nvar router = express.Router();\nvar ProfileImage = require(\'profile_image\');\n\n// if node-paperclip is a dependency of this module is it possible to load it \n// separately like this as middleware? Or do I need to have it installed explicitly\n// Something you wouldn\'t know unless you have published modules that depend on \n// each other.\n\nvar middleware = require(\'node-paperclip\').middleware\n\nrouter.post(\'/post_profile_image\',\n\n    middleware.parse({verbose_methods: true}),\n\n  function(req, res, next) {\n    req.body.profile_image.user_id  = req.user._id;\n    req.body.profile_image.username = req.user.username;\n    next();\n  },\n\n  function(req, res, next) {\n\n    console.log(req.body);\n\n\n    ProfileImage.findOne({username: req.user.username}, function(err, profile_image) {\n      if (req.body.profile_image) {\n        if (profile_image) {\n          profile_image.remove(function(err) {\n            next();\n          });\n        } else {\n          next();\n        }\n      } else {\n        res.redirect(\'/#profile/images\');\n      }\n    });\n  },\n\n  function (req, res) {\n    ProfileImage.create(req.body.profile_image, function(err, doc) {\n      res.redirect(\'/#profile/images\');\n    });\n})\n\n\nmodule.exports = router;\n```\n\nAnd then use the same name as you put in the as the key in the plugin and the name of the attachment that you configured (profile_image[avatar] using the example above)  and the middleware should correctly prepare the data to be saved and place the file in the correct place in your storage.\n\n```html\n<form  class="form-horizontal" enctype="multipart/form-data" action="/post_profile_image" method="post">\n\n<h1>Edit Profile Image</h1>\n\n<div  class="form-group">\n  <div>  \n    <label>Profile Image:</label>\n    <input type="file" name="profile_image[avatar]" id="profile_image">\n  </div>\n</div>\n\n<div  class="form-group">\n  <div class="col-sm-offset-2 col-sm-10">\n    <input class=\'btn btn-default\' type="submit" value="Save"/>\n  </div>\n</div>\n\n</form>\n\n```\n\n\n\nThis module now uses the file system by default, but can use s3 or whatever cloud api you want, just right a module like the node-paperclip-s3 module.  If you share your code that would be great, but you can just pass an object or function that has the correct api and the paperclip module will use what is in the configuration.  I\'ll make a few examples to show how that should work soon.  The example above is configured to use the file system.  \n\nIf you plan to use s3 you will need the following environment variables set the AWS_BUCKET, AWS_REGION, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.\n\n\nContributing\n------------\n\nIf you\'d like to contribute a feature or bugfix: Thanks! To make sure your fix/feature has a high chance of being included, please read the following guidelines:\n\n1. Post a [pull request](https://github.com/ballantyne/node-paperclip-mongoose/compare/).\n2. Make sure there are tests! We will not accept any patch that is not tested.\n   It\'s a rare time when explicit tests aren\'t needed. If you have questions\n   about writing tests for paperclip, please open a\n   [GitHub issue](https://github.com/ballantyne/node-paperclip-mongoose/issues/new).\n\n\nAnd once there are some contributors, then I would like to thank all of [the contributors](https://github.com/ballantyne/node-paperclip-mongoose/graphs/contributors)!\n\nLicense\n-------\n\nIt is free software, and may be redistributed under the terms specified in the MIT-LICENSE file.\n\nCopyright \n-------\n© 2017 Scott Ballantyne. See LICENSE for details.\n\n',
+21 silly publish   readmeFilename: 'README.md',
+21 silly publish   gitHead: '2733cd183bbc4439d49cd80e9ba3f097d9827ab5',
+21 silly publish   _id: 'node-paperclip-mongoose@1.0.1',
+21 silly publish   _shasum: 'd94326c3c17159c55b3b70fc4ae20766a858505b',
+21 silly publish   _from: '.' }
+22 verbose getPublishConfig undefined
+23 silly mapToRegistry name node-paperclip-mongoose
+24 silly mapToRegistry using default registry
+25 silly mapToRegistry registry https://registry.npmjs.org/
+26 silly mapToRegistry data Result {
+26 silly mapToRegistry   raw: 'node-paperclip-mongoose',
+26 silly mapToRegistry   scope: null,
+26 silly mapToRegistry   escapedName: 'node-paperclip-mongoose',
+26 silly mapToRegistry   name: 'node-paperclip-mongoose',
+26 silly mapToRegistry   rawSpec: '',
+26 silly mapToRegistry   spec: 'latest',
+26 silly mapToRegistry   type: 'tag' }
+27 silly mapToRegistry uri https://registry.npmjs.org/node-paperclip-mongoose
+28 verbose publish registryBase https://registry.npmjs.org/
+29 silly publish uploading /home/scott/.npm/node-paperclip-mongoose/1.0.1/package.tgz
+30 verbose request uri https://registry.npmjs.org/node-paperclip-mongoose
+31 verbose request sending authorization for write operation
+32 info attempt registry request try #1 at 4:50:42 AM
+33 verbose request using bearer token for auth
+34 verbose request id 4e5d056d88581569
+35 http request PUT https://registry.npmjs.org/node-paperclip-mongoose
+36 http 403 https://registry.npmjs.org/node-paperclip-mongoose
+37 verbose headers { 'content-type': 'application/json',
+37 verbose headers   'cache-control': 'max-age=300',
+37 verbose headers   'content-length': '91',
+37 verbose headers   'accept-ranges': 'bytes',
+37 verbose headers   date: 'Mon, 20 Nov 2017 10:50:43 GMT',
+37 verbose headers   via: '1.1 varnish',
+37 verbose headers   connection: 'keep-alive',
+37 verbose headers   'x-served-by': 'cache-ord1721-ORD',
+37 verbose headers   'x-cache': 'MISS',
+37 verbose headers   'x-cache-hits': '0',
+37 verbose headers   'x-timer': 'S1511175042.414966,VS0,VE947',
+37 verbose headers   vary: 'Accept-Encoding, Accept' }
+38 verbose request invalidating /home/scott/.npm/registry.npmjs.org/node-paperclip-mongoose on PUT
+39 error publish Failed PUT 403
+40 verbose stack Error: You cannot publish over the previously published version 1.0.1. : node-paperclip-mongoose
+40 verbose stack     at makeError (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:302:12)
+40 verbose stack     at CachingRegistryClient.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:290:14)
+40 verbose stack     at Request._callback (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:210:14)
+40 verbose stack     at Request.self.callback (/usr/local/lib/node_modules/npm/node_modules/request/request.js:187:22)
+40 verbose stack     at emitTwo (events.js:106:13)
+40 verbose stack     at Request.emit (events.js:191:7)
+40 verbose stack     at Request.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1048:10)
+40 verbose stack     at emitOne (events.js:96:13)
+40 verbose stack     at Request.emit (events.js:188:7)
+40 verbose stack     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:969:12)
+41 verbose statusCode 403
+42 verbose pkgid node-paperclip-mongoose
+43 verbose cwd /home/scott/Software/node-paperclip-mongoose
+44 error Linux 4.8.0-53-generic
+45 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "publish"
+46 error node v6.11.4
+47 error npm  v3.10.10
+48 error code E403
+49 error You cannot publish over the previously published version 1.0.1. : node-paperclip-mongoose
+50 error If you need help, you may report this error at:
+50 error     <https://github.com/npm/npm/issues>
+51 verbose exit [ 1, true ]
