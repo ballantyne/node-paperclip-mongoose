@@ -1,6 +1,6 @@
 const path        = require('path');
-const Paperclip   = require('paperclip').paperclip;
-// const Paperclip   = require('node-paperclip').paperclip;
+// const Paperclip   = require('paperclip').paperclip;
+const Paperclip   = require('node-paperclip').paperclip;
 const _           = require('underscore');
 
 module.exports    = function paperclip (schema, opts) {
