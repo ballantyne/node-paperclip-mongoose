@@ -1,5 +1,4 @@
 const path        = require('path');
-// const Paperclip   = require('paperclip').paperclip;
 const Paperclip   = require('node-paperclip').paperclip;
 const _           = require('underscore');
 
@@ -13,16 +12,14 @@ module.exports    = function paperclip (schema, opts) {
     var paperclip            = new Paperclip(configuration);
     var keys                 = _.keys(files);
 
-    
+    var obj                = {};
+    obj[class_name]        = {};
+
+    schema.add(obj);
 
     for (i = 0; i < keys.length; i++) {
       var name               = keys[i];
       var options            = files[name];
-      var obj                = {};
-      obj[name]              = {};
-
-      schema.add(obj);
-
       schema.pre('save', function (next) {
         var self = this;
         if (this.uploads == undefined) this.uploads = {};
