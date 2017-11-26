@@ -1,6 +1,6 @@
 {
   "name": "node-paperclip-mongoose",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/ballantyne/node-paperclip#readme",
   "dependencies": {
-    "node-paperclip": "^1.2.4",
     "underscore": "^1.8.3"
   }
 }

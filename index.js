@@ -12,16 +12,19 @@ module.exports    = function paperclip (schema, opts) {
     var paperclip            = new Paperclip(configuration);
     var keys                 = _.keys(files);
 
-    var obj                = {};
-    obj[class_name]        = {};
-
-    schema.add(obj);
 
     for (i = 0; i < keys.length; i++) {
+
       var name               = keys[i];
       var options            = files[name];
-      schema.pre('save', function (next) {
+      var obj                = {};
+      obj[name]              = {};
+
+      schema.add(obj);     
+     
+      schema.pre('save', function preSave(next) {
         var self = this;
+        console.log('presave', this);
         if (this.uploads == undefined) this.uploads = {};
         var upload                             = _.clone(this[name]);
 
@@ -34,7 +37,10 @@ module.exports    = function paperclip (schema, opts) {
           paperclip[class_name].document       = this;
           paperclip[class_name][name].file     = upload
           paperclip.beforeSave(class_name, name, function(err, doc) {
+            console.log('before save', doc);
             _.extend(self[name], doc);
+
+            console.log(self);
             next();
           })
         } else {
@@ -42,7 +48,7 @@ module.exports    = function paperclip (schema, opts) {
         }
       })
 
-      schema.post('save', function (doc, next) {
+      schema.post('save', function postSave(doc, next) {
         var upload                             = this.uploads[name];
         if (upload) {
           paperclip[class_name].document       = doc;
@@ -55,7 +61,7 @@ module.exports    = function paperclip (schema, opts) {
         }
       }) 
 
-      schema.pre("update", function(next) {
+      schema.pre("update", function preUpdate(next) {
         if (this.uploads == undefined) this.uploads = {};
         var upload                             = _.clone(this[name]);
         if (upload) {
@@ -73,7 +79,7 @@ module.exports    = function paperclip (schema, opts) {
         }
       });
 
-      schema.post('update', function(error, res, next) {
+      schema.post('update', function postUpdate(error, res, next) {
         var upload                             = this.uploads[name];
         if (upload) {
           paperclip[class_name].document       = doc;
@@ -86,7 +92,7 @@ module.exports    = function paperclip (schema, opts) {
         }
       });
 
-      schema.post('remove', function (doc) {
+      schema.post('remove', function postRemove(doc) {
         paperclip[class_name].document         = doc;
         paperclip.afterRemove(class_name, name, function(err, result) {
           console.log('deleted', doc.constructor.modelName, doc._id);
