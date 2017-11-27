@@ -1,6 +1,8 @@
 node-paperclip-mongoose
 =========
 
+For now I'm moving this back into the main repo because it is annoying to make changes to all the different modules and then reinstall and then test.  I plan to eventually make it separate, but for now, this module is unnecessary.
+
 This is going to be the module that people need if they use mongoose.  It won't work until the next version of node-paperclip is released, but I am publishing it in order to test it to ensure that when I do publish it it will work as expected.  The configuration has changed and also the form that you would use to upload a document has also changed.
 
 
